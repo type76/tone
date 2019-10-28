@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>m</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<style>
+* {margin: 0; padding: 0; overscroll-behavior: none; }
+html, body {overflow-x: hidden; }
+body {background-color: #000; margin: 3em 0 0 0; padding: 0;
+	color: #fff; font-family: monospace; position: relative;}
+body.on {background-color: maroon;}
+#xpos {margin-top: 3em;}
+#xpos, #ontext {text-align: center; user-select:none; display: inline-block;
+  -webkit-transition-property: opacity;
+  -webkit-transition-duration: 0.2s;
+  -webkit-transition-delay: 0.2s;
+  transition-property: opacity;
+  transition-duration: 0.2s;
+  transition-delay: 0.2s;
+  }
+#ontext {opacity: 0.2;}
+.on #ontext {opacity: 1 !important;}
+
+.on #xpos {opacity: 0.2;}
+span {display: inline;}
+p {user-select:none; display: block; width: 100px; margin: 0 auto; font-size: 1.1em; text-align: center; cursor: pointer;}
+p:hover {color: red;}
+svg {display: block; width: 50px; height: 50px; margin: 3em auto;}
+svg path {fill: #fff;}
+.bit2, .bit3 {  
+opacity: 0.1;
+}
+.bit3 {
+    -webkit-transition-property: opacity;
+  -webkit-transition-duration: 0.2s;
+  -webkit-transition-delay: 0.2s;
+  transition-property: opacity;
+  transition-duration: 0.2s;
+  transition-delay: 0.2s;
+}
+body.on .bit2, body.on .bit3 {opacity: 1;}
+
+#overlay {position: absolute; z-index: 99;
+top: 0; left: 0; right: 0; bottom: 0; display: block; cursor: pointer;}
+@keyframes expand {
+    0% {display: none;}
+  100% {display: block;}
+}
+</style>
+</head>
+<body onclick="playtone()">
+<div id="overlay"></div>
+   <p><span id="xpos">on</span> | <span id="ontext">off</span></p>
+
+<svg height="50" preserveAspectRatio="none" viewBox="0 0 50 50" width="50" xmlns="http://www.w3.org/2000/svg">
+<path class="bit1" d="m25.05 10.15q-.65 0-1.1.45l-8.2 8.15h-6.4q-.45 0-1.1.5-.5.45-.5 1.1v9.4q0 .45.5 1.1.65.5 1.1.5h6.4l8.2 8.05q.35.5 1.1.5.65 0 1.05-.5.45-.35.45-1v-26.7q0-.65-.45-1.1-.5-.45-1.05-.45z"/>
+<path class="bit2" d="m30 20.75q0 .55.25.9l1.6 1.1.75.85.25 1.4q0 .85-.25 1.4-.5.75-.75.95l-1.6 1.1q-.25.45-.25.9 0 .65.45 1.15.65.45 1.1.45l.65-.2q1.8-.75 2.7-2.2 1.05-1.5 1.05-3.55 0-1.85-1.05-3.45-1.1-1.65-2.7-2.2l-.65-.2q-.45 0-1.1.45-.45.5-.45 1.15z"/>
+<path class="bit3" d="m34.65 13.55-.65-.15q-.6 0-1.05.45-.45.45-.45 1.1 0 .95.9 1.5l1.9 1q1.85 1.4 2.75 3.35 1.05 2.05 1.05 4.2 0 2.25-1.05 4.3-.9 1.95-2.75 3.35l-1.9 1q-.9.55-.9 1.5 0 .65.45 1.1.45.45 1.1.45l.6-.15q3.6-1.4 5.45-4.55 2.15-3.3 2.15-7 0-3.6-2.15-6.9-1.85-3.15-5.45-4.55z"/></svg>
+
+
+<script type="text/javascript">
+// events
+window.addEventListener('mousemove', e => {
+    e.preventDefault();
+    setcontrol(e.offsetX, e.offsetY)
+});
+
+window.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const touches = e.targetTouches;
+    for (let i = 0; i < touches.length; i++) {
+        setcontrol(touches[i].pageX, touches[i].pageY)
+    }
+}, false);
+
+
+
+// audio start settings / vars
+var carrier_freq = 40;
+var beat_freq = 3;
+var isPlaying = false;
+var left_osc, right_osc;
+var volume = 0.5;
+
+// audio js
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var cntx = new AudioContext();
+var merger = cntx.createChannelMerger(2);
+volumeNode = cntx.createGain();
+volumeNode.gain.value = volume;
+merger.connect(volumeNode);
+volumeNode.connect(cntx.destination);
+
+
+// button toggle
+function playtone() {
+
+  document.body.classList.toggle('on');
+    
+    setTimeout(function() {
+
+    }, 100);
+
+  if (document.body.classList != "on") {
+// stop
+document.body.classList = '';
+right_osc.stop();
+
+setTimeout(function () {
+  left_osc.stop();
+}, 50);
+
+setTimeout(function () {
+  isPlaying = false;
+}, 100);
+
+} else {
+// play
+left_osc = cntx.createOscillator();
+right_osc = cntx.createOscillator();
+
+right_osc.connect(merger, 0, 0);
+left_osc.connect(merger, 0, 1);
+left_osc.start();
+
+setTimeout(function () {
+  right_osc.start();
+}, 10);
+
+setTimeout(function () {
+  isPlaying = true;
+}, 20);
+}
+
+}
+
+// convert position to sound
+function setcontrol(x, y) {
+  if (typeof right_osc != "undefined") {
+    right_osc.frequency.value = x;
+    left_osc.frequency.value = x + y;
+  }
+}
+
+
+</script>
+</body>
+</html>
